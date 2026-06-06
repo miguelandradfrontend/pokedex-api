@@ -1,6 +1,11 @@
 const pokemonInput = document.querySelector("#pokemon-input");
 const searchBtn = document.querySelector("#search-btn");
 const pokemonCard = document.querySelector("#pokemon-card");
+const randomBtn = document.querySelector("#random-btn");
+const soundBtn = document.querySelector("#sound-btn");
+
+let isShiny = false;
+let currentCry = "";
 
 async function searchPokemon() {
     const pokemonName = pokemonInput.value.toLowerCase().trim();
@@ -21,6 +26,7 @@ if (!response.ok) {
 }
 
 const data = await response.json();
+currentCry = data.cries.latest;
 const speciesResponse = await fetch(
     `https://pokeapi.co/api/v2/pokemon-species/${pokemonName}`
 );
@@ -56,10 +62,20 @@ const pokemonTypes = data.types
 
         <div class="pokemon-image-frame">
             <img
+                id="pokemon-image"
                 src="${data.sprites.front_default}"
                 alt="${data.name}"
                 class="pokemon-image"
             >
+
+            <button
+                id="shiny-btn"
+                class="shiny-btn"
+                data-normal="${data.sprites.front_default}"
+                data-shiny="${data.sprites.front_shiny}"
+            >
+                ✨
+            </button>
         </div>
 
         <div class="pokemon-details">
@@ -73,6 +89,23 @@ const pokemonTypes = data.types
 
     </div>
 `;
+
+isShiny = false;
+
+const shinyBtn = document.querySelector("#shiny-btn");
+const pokemonImage = document.querySelector("#pokemon-image");
+
+shinyBtn.addEventListener("click", () => {
+    isShiny = !isShiny;
+
+    if (isShiny) {
+        pokemonImage.src = shinyBtn.dataset.shiny;
+        shinyBtn.textContent = "🔁";
+    } else {
+        pokemonImage.src = shinyBtn.dataset.normal;
+        shinyBtn.textContent = "✨";
+    }
+});
 
 pokemonInput.value = "";
 pokemonInput.focus();
@@ -92,4 +125,24 @@ pokemonInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
         searchPokemon();
     }
+});
+
+randomBtn.addEventListener("click", () => {
+
+    const randomPokemon =
+        Math.floor(Math.random() * 1025) + 1;
+
+    pokemonInput.value = randomPokemon;
+
+    searchPokemon();
+
+});
+
+soundBtn.addEventListener("click", () => {
+    if (!currentCry) {
+        return;
+    }
+
+    const cry = new Audio(currentCry);
+    cry.play();
 });
