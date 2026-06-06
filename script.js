@@ -26,35 +26,56 @@ const speciesResponse = await fetch(
 );
 
 const speciesData = await speciesResponse.json();
-const entry = speciesData.flavor_text_entries.find(
+const spanishEntry = speciesData.flavor_text_entries.find(
     item => item.language.name === "es"
 );
 
-const curiosity = entry.flavor_text
-    .replace(/\n/g, " ")
-    .replace(/\f/g, " ");
-console.log(curiosity);
+const englishEntry = speciesData.flavor_text_entries.find(
+    item => item.language.name === "en"
+);
+
+const entry = spanishEntry || englishEntry;
+
+let curiosity = "No hay curiosidad disponible para este Pokémon.";
+
+if (entry) {
+    curiosity = entry.flavor_text
+        .replace(/\n/g, " ")
+        .replace(/\f/g, " ");
+}
 
 const pokemonTypes = data.types
     .map(typeInfo => typeInfo.type.name)
     .join(", ");
  pokemonCard.innerHTML = `
-        <div class="pokemon-info">
-            <img src="${data.sprites.front_default}" alt="${data.name}">
+    <div class="pokemon-info">
 
+        <div class="pokemon-header">
             <h2>${data.name}</h2>
+        </div>
 
-            <p><strong>Tipos:</strong> Tipo: ${pokemonTypes}</p>
+        <div class="pokemon-image-frame">
+            <img
+                src="${data.sprites.front_default}"
+                alt="${data.name}"
+                class="pokemon-image"
+            >
+        </div>
 
+        <div class="pokemon-details">
+            <p><strong>Tipos:</strong> ${pokemonTypes}</p>
             <p><strong>Altura:</strong> ${data.height}</p>
-
             <p><strong>Peso:</strong> ${data.weight}</p>
 
-            <p><strong>Curiosidad:</strong></p>
-
-            <p>${curiosity}</p>
+            <p class="curiosity-title"><strong>Curiosidad:</strong></p>
+            <p class="curiosity-text">${curiosity}</p>
         </div>
-    `;
+
+    </div>
+`;
+
+pokemonInput.value = "";
+pokemonInput.focus();
 
     } catch (error) {
 
@@ -67,3 +88,8 @@ const pokemonTypes = data.types
 }
 
 searchBtn.addEventListener("click", searchPokemon);
+pokemonInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        searchPokemon();
+    }
+});
