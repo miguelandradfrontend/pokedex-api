@@ -163,6 +163,44 @@ h1 {
     font-weight: bold;
 }
 
+.forms-btn {
+    position: absolute;
+    left: 2px;
+    top: 6px;
+
+    width: 30px;
+    height: 30px;
+
+    border: 2px solid #2b2b2b;
+    border-radius: 50%;
+
+    background: #6dca03;
+    color: white;
+
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.gmax-btn {
+    position: absolute;
+    right: 2px;
+    top: 6px;
+
+    width: 30px;
+    height: 30px;
+
+    border: 2px solid #2b2b2b;
+    border-radius: 50%;
+
+    background: #c5a907;
+    color: white;
+
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
 .form-message {
     position: absolute;
     left: 50%;

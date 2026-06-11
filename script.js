@@ -23,7 +23,7 @@ function getSpriteSet(pokemonData) {
 }
 
 async function searchPokemon() {
-    const pokemonName = pokemonInput.value.toLowerCase().trim();
+    const pokemonName = pokemonInput.value.toLowerCase().trim().replace(/\s+/g, "-");
 
     if (pokemonName === "") {
         pokemonCard.innerHTML = "<p>Escribe un nombre o número de Pokémon.</p>";
@@ -32,15 +32,41 @@ async function searchPokemon() {
 
     try {
 
-const response = await fetch(
+let response = await fetch(
     `https://pokeapi.co/api/v2/pokemon/${pokemonName}`
 );
 
-if (!response.ok) {
-    throw new Error("Pokémon no encontrado");
-}
+let data;
 
-const data = await response.json();
+if (response.ok) {
+    data = await response.json();
+} else {
+    const speciesResponse = await fetch(
+        `https://pokeapi.co/api/v2/pokemon-species/${pokemonName}`
+    );
+
+    if (!speciesResponse.ok) {
+        throw new Error("Pokémon no encontrado");
+    }
+
+    const speciesData = await speciesResponse.json();
+
+    const defaultVariety = speciesData.varieties.find(
+        variety => variety.is_default
+    );
+
+    if (!defaultVariety) {
+        throw new Error("Forma por defecto no encontrada");
+    }
+
+    const defaultPokemonResponse = await fetch(defaultVariety.pokemon.url);
+
+    if (!defaultPokemonResponse.ok) {
+        throw new Error("Variedad por defecto no encontrada");
+    }
+
+    data = await defaultPokemonResponse.json();
+}
 const baseSprites = getSpriteSet(data);
 currentCry = data.cries.latest;
 const speciesResponse = await fetch(
@@ -51,6 +77,24 @@ const speciesData = await speciesResponse.json();
 const megaForms = speciesData.varieties.filter(
     variety => variety.pokemon.name.includes("-mega")
 );
+const gmaxForms = speciesData.varieties.filter(
+    variety => variety.pokemon.name.includes("-gmax")
+);
+
+const normalForms = speciesData.varieties.filter(variety => {
+
+    const name = variety.pokemon.name;
+
+    return (
+        !variety.is_default &&
+        !name.includes("-mega") &&
+        !name.includes("-gmax") &&
+        !name.includes("power-construct") &&
+        !name.includes("starter")
+    );
+});
+
+console.log("FORMAS:", normalForms);
 
 const spanishEntry = speciesData.flavor_text_entries.find(
     item => item.language.name === "es"
@@ -77,11 +121,19 @@ const pokemonTypes = data.types
 const megaButtonHTML = megaForms.length > 0
     ? `<button id="mega-btn" class="mega-btn">M</button>`
     : "";
+
+const formsButtonHTML = normalForms.length > 0
+    ? `<button id="forms-btn" class="forms-btn">F</button>`
+    : "";
+
+const gmaxButtonHTML = gmaxForms.length > 0
+    ? `<button id="gmax-btn" class="gmax-btn">G</button>`
+    : "";
  pokemonCard.innerHTML = `
     <div class="pokemon-info">
 
         <div class="pokemon-header">
-            <h2>${data.name}</h2>
+            <h2 id="pokemon-name">${data.name}</h2>
         </div>
 
         <div class="pokemon-image-frame">
@@ -101,6 +153,8 @@ const megaButtonHTML = megaForms.length > 0
                 ✨
             </button>
             ${megaButtonHTML}
+            ${formsButtonHTML}
+            ${gmaxButtonHTML}
             <p id="form-message" class="form-message"></p>
         </div>
 
@@ -120,6 +174,7 @@ isShiny = false;
 
 const shinyBtn = document.querySelector("#shiny-btn");
 const pokemonImage = document.querySelector("#pokemon-image");
+const pokemonNameTitle = document.querySelector("#pokemon-name");
 
 shinyBtn.addEventListener("click", () => {
     isShiny = !isShiny;
@@ -135,6 +190,8 @@ shinyBtn.addEventListener("click", () => {
 
 const megaBtn = document.querySelector("#mega-btn");
 const formMessage = document.querySelector("#form-message");
+const formsBtn = document.querySelector("#forms-btn");
+const gmaxBtn = document.querySelector("#gmax-btn");
 
 if (megaBtn) {
     let megaIndex = 0;
@@ -146,6 +203,7 @@ if (megaBtn) {
         if (megaIndex > megaForms.length) {
 
             pokemonImage.src = baseSprites.normal;
+            pokemonNameTitle.textContent = data.name;
 
             shinyBtn.dataset.normal = baseSprites.normal;
             shinyBtn.dataset.shiny = baseSprites.shiny;
@@ -176,6 +234,7 @@ if (megaBtn) {
         }
 
         pokemonImage.src = megaSprites.normal;
+        pokemonNameTitle.textContent = megaData.name;
 
         shinyBtn.dataset.normal = megaSprites.normal;
         shinyBtn.dataset.shiny = megaSprites.shiny;
@@ -190,6 +249,117 @@ if (megaBtn) {
         console.error("Mega no disponible:", error);
     }
 });
+}
+
+if (formsBtn) {
+
+    let formIndex = 0;
+
+    formsBtn.addEventListener("click", async () => {
+
+        formIndex++;
+
+        if (formIndex > normalForms.length) {
+
+            pokemonImage.src = baseSprites.normal;
+
+            shinyBtn.dataset.normal = baseSprites.normal;
+            shinyBtn.dataset.shiny = baseSprites.shiny;
+
+            pokemonNameTitle.textContent = data.name;
+
+            isShiny = false;
+            shinyBtn.textContent = "✨";
+
+            formIndex = 0;
+
+            return;
+        }
+
+        try {
+
+            const formUrl = normalForms[formIndex - 1].pokemon.url;
+            const formResponse = await fetch(formUrl);
+
+            if (!formResponse.ok) {
+                throw new Error("Forma no disponible");
+            }
+
+            const formData = await formResponse.json();
+            const formSprites = getSpriteSet(formData);
+
+            pokemonImage.src = formSprites.normal;
+
+            shinyBtn.dataset.normal = formSprites.normal;
+            shinyBtn.dataset.shiny = formSprites.shiny;
+
+            pokemonNameTitle.textContent = formData.name;
+
+            isShiny = false;
+            shinyBtn.textContent = "✨";
+
+        } catch (error) {
+            console.error("Forma no disponible:", error);
+        }
+    });
+}
+
+if (gmaxBtn) {
+
+    let gmaxIndex = 0;
+
+    gmaxBtn.addEventListener("click", async () => {
+
+        gmaxIndex++;
+
+        if (gmaxIndex > gmaxForms.length) {
+
+            pokemonImage.src = baseSprites.normal;
+
+            shinyBtn.dataset.normal = baseSprites.normal;
+            shinyBtn.dataset.shiny = baseSprites.shiny;
+
+            pokemonNameTitle.textContent = data.name;
+
+            isShiny = false;
+            shinyBtn.textContent = "✨";
+
+            gmaxIndex = 0;
+
+            return;
+        }
+
+        try {
+
+            const gmaxUrl = gmaxForms[gmaxIndex - 1].pokemon.url;
+
+            const gmaxResponse = await fetch(gmaxUrl);
+
+            if (!gmaxResponse.ok) {
+                throw new Error("Gigantamax no disponible");
+            }
+
+            const gmaxData = await gmaxResponse.json();
+            const gmaxSprites = getSpriteSet(gmaxData);
+
+            if (!gmaxSprites.normal) {
+                throw new Error("Gigantamax sin imagen disponible");
+            }
+
+            pokemonImage.src = gmaxSprites.normal;
+
+            shinyBtn.dataset.normal = gmaxSprites.normal;
+            shinyBtn.dataset.shiny = gmaxSprites.shiny;
+
+            pokemonNameTitle.textContent = gmaxData.name;
+
+            isShiny = false;
+            shinyBtn.textContent = "✨";
+
+        } catch (error) {
+            console.error("Gigantamax no disponible:", error);
+        }
+    });
 }
 
 pokemonInput.value = "";
