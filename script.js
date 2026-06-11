@@ -22,6 +22,15 @@ function getSpriteSet(pokemonData) {
     return { normal, shiny };
 }
 
+function renderStats(pokemonData) {
+    return pokemonData.stats.map(statInfo => `
+        <div class="stat-row">
+            <span class="stat-name">${statInfo.stat.name}</span>
+            <span class="stat-value">${statInfo.base_stat}</span>
+        </div>
+    `).join("");
+}
+
 async function searchPokemon() {
     const pokemonName = pokemonInput.value.toLowerCase().trim().replace(/\s+/g, "-");
 
@@ -94,8 +103,6 @@ const normalForms = speciesData.varieties.filter(variety => {
     );
 });
 
-console.log("FORMAS:", normalForms);
-
 const spanishEntry = speciesData.flavor_text_entries.find(
     item => item.language.name === "es"
 );
@@ -134,6 +141,9 @@ const gmaxButtonHTML = gmaxForms.length > 0
 
         <div class="pokemon-header">
             <h2 id="pokemon-name">${data.name}</h2>
+            <span id="pokemon-number">
+                #${String(data.id).padStart(4, "0")}
+            </span>
         </div>
 
         <div class="pokemon-image-frame">
@@ -162,6 +172,12 @@ const gmaxButtonHTML = gmaxForms.length > 0
             <p><strong>Tipos:</strong> ${pokemonTypes}</p>
             <p><strong>Altura:</strong> ${data.height}</p>
             <p><strong>Peso:</strong> ${data.weight}</p>
+            <div class="pokemon-stats">
+                <p class="stats-title"><strong>Estadísticas base:</strong></p>
+                <div id="stats-list">
+                    ${renderStats(data)}
+                </div>
+            </div>
 
             <p class="curiosity-title"><strong>Curiosidad:</strong></p>
             <p class="curiosity-text">${curiosity}</p>
@@ -175,6 +191,7 @@ isShiny = false;
 const shinyBtn = document.querySelector("#shiny-btn");
 const pokemonImage = document.querySelector("#pokemon-image");
 const pokemonNameTitle = document.querySelector("#pokemon-name");
+const statsList = document.querySelector("#stats-list");
 
 shinyBtn.addEventListener("click", () => {
     isShiny = !isShiny;
@@ -207,6 +224,7 @@ if (megaBtn) {
 
             shinyBtn.dataset.normal = baseSprites.normal;
             shinyBtn.dataset.shiny = baseSprites.shiny;
+            statsList.innerHTML = renderStats(data);
 
             isShiny = false;
             shinyBtn.textContent = "✨";
@@ -235,6 +253,7 @@ if (megaBtn) {
 
         pokemonImage.src = megaSprites.normal;
         pokemonNameTitle.textContent = megaData.name;
+        statsList.innerHTML = renderStats(megaData);
 
         shinyBtn.dataset.normal = megaSprites.normal;
         shinyBtn.dataset.shiny = megaSprites.shiny;
@@ -267,6 +286,7 @@ if (formsBtn) {
             shinyBtn.dataset.shiny = baseSprites.shiny;
 
             pokemonNameTitle.textContent = data.name;
+            statsList.innerHTML = renderStats(data);
 
             isShiny = false;
             shinyBtn.textContent = "✨";
@@ -294,6 +314,7 @@ if (formsBtn) {
             shinyBtn.dataset.shiny = formSprites.shiny;
 
             pokemonNameTitle.textContent = formData.name;
+            statsList.innerHTML = renderStats(formData);
 
             isShiny = false;
             shinyBtn.textContent = "✨";
@@ -320,6 +341,7 @@ if (gmaxBtn) {
             shinyBtn.dataset.shiny = baseSprites.shiny;
 
             pokemonNameTitle.textContent = data.name;
+            statsList.innerHTML = renderStats(data);
 
             isShiny = false;
             shinyBtn.textContent = "✨";
@@ -352,7 +374,7 @@ if (gmaxBtn) {
             shinyBtn.dataset.shiny = gmaxSprites.shiny;
 
             pokemonNameTitle.textContent = gmaxData.name;
-
+            statsList.innerHTML = renderStats(gmaxData);
             isShiny = false;
             shinyBtn.textContent = "✨";
 
