@@ -29,9 +29,12 @@ function toggleFavorite(pokemonData) {
         alert("Solo puedes guardar 35 Pokémon favoritos.");
         return;
     }
+    const sprites = getSpriteSet(pokemonData);
+
     favorites.push({
         id: pokemonData.id,
-        name: pokemonData.name
+        name: pokemonData.name,
+        image: sprites.normal
     });
 }
     saveFavorites();
@@ -50,9 +53,12 @@ function addToRecentPokemon(pokemonData) {
         pokemon => pokemon.id !== pokemonData.id
     );
 
+    const sprites = getSpriteSet(pokemonData);
+
     recentPokemon.unshift({
         id: pokemonData.id,
-        name: pokemonData.name
+        name: pokemonData.name,
+        image: sprites.normal
     });
 
     if (recentPokemon.length > 10) {
@@ -193,8 +199,12 @@ if (entry) {
 }
 
 const pokemonTypes = data.types
-    .map(typeInfo => typeInfo.type.name)
-    .join(", ");
+    .map(typeInfo => `
+        <span class="type-badge type-${typeInfo.type.name}">
+            ${typeInfo.type.name}
+        </span>
+    `)
+    .join("");
 
 const megaButtonHTML = megaForms.length > 0
     ? `<button id="mega-btn" class="mega-btn">M</button>`
@@ -248,7 +258,12 @@ const gmaxButtonHTML = gmaxForms.length > 0
         </div>
 
         <div class="pokemon-details">
-            <p><strong>Tipos:</strong> ${pokemonTypes}</p>
+            <div class="types-row">
+                <strong>Tipos:</strong>
+                <div class="types-list">
+                    ${pokemonTypes}
+                </div>
+            </div>
             <p><strong>Altura:</strong> ${data.height}</p>
             <p><strong>Peso:</strong> ${data.weight}</p>
             <div class="pokemon-stats">
@@ -495,8 +510,9 @@ function renderFavoritesList() {
     }
 
     favoritesList.innerHTML = favorites.map(pokemon => `
-        <button class="favorite-item" data-name="${pokemon.name}">
-            ⭐ ${pokemon.name}
+        <button class="favorite-item" data-id="${pokemon.id}">
+            <img src="${pokemon.image}" alt="${pokemon.name}" class="mini-sprite">
+            <span>${pokemon.name}</span>
         </button>
     `).join("");
 }
@@ -510,8 +526,9 @@ function renderRecentList() {
     }
 
     recentList.innerHTML = recentPokemon.map(pokemon => `
-        <button class="recent-item" data-name="${pokemon.id}">
-            🕒 ${pokemon.name}
+        <button class="recent-item" data-id="${pokemon.id}">
+            <img src="${pokemon.image}" alt="${pokemon.name}" class="mini-sprite">
+            <span>${pokemon.name}</span>
         </button>
     `).join("");
 }
@@ -550,11 +567,13 @@ favoritesToggleBtn.addEventListener("click", () => {
 });
 
 favoritesList.addEventListener("click", (event) => {
-    if (!event.target.classList.contains("favorite-item")) {
+    const favoriteItem = event.target.closest(".favorite-item");
+
+    if (!favoriteItem) {
         return;
     }
 
-    pokemonInput.value = event.target.dataset.id;
+    pokemonInput.value = favoriteItem.dataset.id;
     favoritesList.classList.add("hidden");
     searchPokemon();
 });
@@ -566,11 +585,13 @@ recentToggleBtn.addEventListener("click", () => {
 });
 
 recentList.addEventListener("click", (event) => {
-    if (!event.target.classList.contains("recent-item")) {
+    const recentItem = event.target.closest(".recent-item");
+
+    if (!recentItem) {
         return;
     }
 
-    pokemonInput.value = event.target.dataset.name;
+    pokemonInput.value = recentItem.dataset.id;
     recentList.classList.add("hidden");
     searchPokemon();
 });
