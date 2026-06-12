@@ -107,6 +107,45 @@ function renderStats(pokemonData) {
     }).join("");
 }
 
+function renderPokemonList(list, className, emptyMessage) {
+
+    if (list.length === 0) {
+        return `
+            <p class="favorites-empty">${emptyMessage}</p>
+        `;
+    }
+
+    return list.map(pokemon => `
+        <button class="${className}" data-id="${pokemon.id}">
+            <img
+                src="${pokemon.image}"
+                alt="${pokemon.name}"
+                class="mini-sprite"
+            >
+            <span>${pokemon.name}</span>
+        </button>
+    `).join("");
+}
+
+function updatePokemonDisplay(
+    pokemonData,
+    sprites,
+    pokemonImage,
+    pokemonNameTitle,
+    statsList,
+    shinyBtn
+) {
+    pokemonImage.src = sprites.normal;
+    pokemonNameTitle.textContent = pokemonData.name;
+    statsList.innerHTML = renderStats(pokemonData);
+
+    shinyBtn.dataset.normal = sprites.normal;
+    shinyBtn.dataset.shiny = sprites.shiny;
+
+    isShiny = false;
+    shinyBtn.textContent = "✨";
+}
+
 async function searchPokemon() {
     const pokemonName = pokemonInput.value.toLowerCase().trim().replace(/\s+/g, "-");
 
@@ -207,15 +246,15 @@ const pokemonTypes = data.types
     .join("");
 
 const megaButtonHTML = megaForms.length > 0
-    ? `<button id="mega-btn" class="mega-btn">M</button>`
+    ? `<button id="mega-btn" class="mega-btn form-button">M</button>`
     : "";
 
 const formsButtonHTML = normalForms.length > 0
-    ? `<button id="forms-btn" class="forms-btn">F</button>`
+    ? `<button id="forms-btn" class="forms-btn form-button">F</button>`
     : "";
 
 const gmaxButtonHTML = gmaxForms.length > 0
-    ? `<button id="gmax-btn" class="gmax-btn">G</button>`
+    ? `<button id="gmax-btn" class="gmax-btn form-button">G</button>`
     : "";
  pokemonCard.innerHTML = `
     <div class="pokemon-info">
@@ -233,7 +272,6 @@ const gmaxButtonHTML = gmaxForms.length > 0
                 </span>
             </div>
         </div>
-    </div>
 
         <div class="pokemon-image-frame">
             <img
@@ -245,7 +283,7 @@ const gmaxButtonHTML = gmaxForms.length > 0
 
             <button
                 id="shiny-btn"
-                class="shiny-btn"
+                class="shiny-btn form-button" 
                 data-normal="${baseSprites.normal}"
                 data-shiny="${baseSprites.shiny}"
             >
@@ -276,7 +314,6 @@ const gmaxButtonHTML = gmaxForms.length > 0
             <p class="curiosity-title"><strong>Curiosidad:</strong></p>
             <p class="curiosity-text">${curiosity}</p>
         </div>
-
     </div>
 `;
 pokemonCard.scrollIntoView({
@@ -323,20 +360,17 @@ if (megaBtn) {
 
         if (megaIndex > megaForms.length) {
 
-            pokemonImage.src = baseSprites.normal;
-            pokemonNameTitle.textContent = data.name;
-
-            shinyBtn.dataset.normal = baseSprites.normal;
-            shinyBtn.dataset.shiny = baseSprites.shiny;
-            statsList.innerHTML = renderStats(data);
-
-            isShiny = false;
-            shinyBtn.textContent = "✨";
+    updatePokemonDisplay(
+        data,
+        baseSprites,
+        pokemonImage,
+        pokemonNameTitle,
+        statsList,
+        shinyBtn
+    );
 
             formMessage.textContent = "";
-
             megaIndex = 0;
-
             return;
         }
 
@@ -355,15 +389,14 @@ if (megaBtn) {
             throw new Error("Mega sin imagen disponible");
         }
 
-        pokemonImage.src = megaSprites.normal;
-        pokemonNameTitle.textContent = megaData.name;
-        statsList.innerHTML = renderStats(megaData);
-
-        shinyBtn.dataset.normal = megaSprites.normal;
-        shinyBtn.dataset.shiny = megaSprites.shiny;
-
-        isShiny = false;
-        shinyBtn.textContent = "✨";
+    updatePokemonDisplay(
+        megaData,
+        megaSprites,
+        pokemonImage,
+        pokemonNameTitle,
+        statsList,
+        shinyBtn
+    );
 
         formMessage.textContent = "";
 
@@ -384,16 +417,14 @@ if (formsBtn) {
 
         if (formIndex > normalForms.length) {
 
-            pokemonImage.src = baseSprites.normal;
-
-            shinyBtn.dataset.normal = baseSprites.normal;
-            shinyBtn.dataset.shiny = baseSprites.shiny;
-
-            pokemonNameTitle.textContent = data.name;
-            statsList.innerHTML = renderStats(data);
-
-            isShiny = false;
-            shinyBtn.textContent = "✨";
+    updatePokemonDisplay(
+        data,
+        baseSprites,
+        pokemonImage,
+        pokemonNameTitle,
+        statsList,
+        shinyBtn
+    );
 
             formIndex = 0;
 
@@ -412,16 +443,14 @@ if (formsBtn) {
             const formData = await formResponse.json();
             const formSprites = getSpriteSet(formData);
 
-            pokemonImage.src = formSprites.normal;
-
-            shinyBtn.dataset.normal = formSprites.normal;
-            shinyBtn.dataset.shiny = formSprites.shiny;
-
-            pokemonNameTitle.textContent = formData.name;
-            statsList.innerHTML = renderStats(formData);
-
-            isShiny = false;
-            shinyBtn.textContent = "✨";
+        updatePokemonDisplay(
+            formData,
+            formSprites,
+            pokemonImage,
+            pokemonNameTitle,
+            statsList,
+            shinyBtn
+        );
 
         } catch (error) {
             console.error("Forma no disponible:", error);
@@ -439,16 +468,14 @@ if (gmaxBtn) {
 
         if (gmaxIndex > gmaxForms.length) {
 
-            pokemonImage.src = baseSprites.normal;
-
-            shinyBtn.dataset.normal = baseSprites.normal;
-            shinyBtn.dataset.shiny = baseSprites.shiny;
-
-            pokemonNameTitle.textContent = data.name;
-            statsList.innerHTML = renderStats(data);
-
-            isShiny = false;
-            shinyBtn.textContent = "✨";
+    updatePokemonDisplay(
+        data,
+        baseSprites,
+        pokemonImage,
+        pokemonNameTitle,
+        statsList,
+        shinyBtn
+    );
 
             gmaxIndex = 0;
 
@@ -458,7 +485,6 @@ if (gmaxBtn) {
         try {
 
             const gmaxUrl = gmaxForms[gmaxIndex - 1].pokemon.url;
-
             const gmaxResponse = await fetch(gmaxUrl);
 
             if (!gmaxResponse.ok) {
@@ -472,15 +498,14 @@ if (gmaxBtn) {
                 throw new Error("Gigantamax sin imagen disponible");
             }
 
-            pokemonImage.src = gmaxSprites.normal;
-
-            shinyBtn.dataset.normal = gmaxSprites.normal;
-            shinyBtn.dataset.shiny = gmaxSprites.shiny;
-
-            pokemonNameTitle.textContent = gmaxData.name;
-            statsList.innerHTML = renderStats(gmaxData);
-            isShiny = false;
-            shinyBtn.textContent = "✨";
+    updatePokemonDisplay(
+        gmaxData,
+        gmaxSprites,
+        pokemonImage,
+        pokemonNameTitle,
+        statsList,
+        shinyBtn
+    );
 
         } catch (error) {
             console.error("Gigantamax no disponible:", error);
@@ -502,35 +527,42 @@ pokemonInput.blur();
 }
 
 function renderFavoritesList() {
-    if (favorites.length === 0) {
-        favoritesList.innerHTML = `
-            <p class="favorites-empty">No hay favoritos todavía.</p>
-        `;
-        return;
-    }
 
-    favoritesList.innerHTML = favorites.map(pokemon => `
-        <button class="favorite-item" data-id="${pokemon.id}">
-            <img src="${pokemon.image}" alt="${pokemon.name}" class="mini-sprite">
-            <span>${pokemon.name}</span>
-        </button>
-    `).join("");
+    favoritesList.innerHTML = renderPokemonList(
+        favorites,
+        "favorite-item",
+        "No hay favoritos todavía."
+    );
+
 }
 
 function renderRecentList() {
-    if (recentPokemon.length === 0) {
-        recentList.innerHTML = `
-            <p class="favorites-empty">No hay Pokémon recientes todavía.</p>
-        `;
-        return;
-    }
 
-    recentList.innerHTML = recentPokemon.map(pokemon => `
-        <button class="recent-item" data-id="${pokemon.id}">
-            <img src="${pokemon.image}" alt="${pokemon.name}" class="mini-sprite">
-            <span>${pokemon.name}</span>
-        </button>
-    `).join("");
+    recentList.innerHTML = renderPokemonList(
+        recentPokemon,
+        "recent-item",
+        "No hay Pokémon recientes todavía."
+    );
+
+}
+
+function setupPokemonListClick(listElement) {
+
+    listElement.addEventListener("click", (event) => {
+        const item = event.target.closest("button");
+
+        if (!item) {
+            return;
+        }
+
+        pokemonInput.value = item.dataset.id;
+
+        favoritesList.classList.add("hidden");
+        recentList.classList.add("hidden");
+
+        searchPokemon();
+    });
+
 }
 
 searchBtn.addEventListener("click", searchPokemon);
@@ -566,32 +598,11 @@ favoritesToggleBtn.addEventListener("click", () => {
     recentList.classList.add("hidden");
 });
 
-favoritesList.addEventListener("click", (event) => {
-    const favoriteItem = event.target.closest(".favorite-item");
-
-    if (!favoriteItem) {
-        return;
-    }
-
-    pokemonInput.value = favoriteItem.dataset.id;
-    favoritesList.classList.add("hidden");
-    searchPokemon();
-});
-
 recentToggleBtn.addEventListener("click", () => {
     renderRecentList();
     recentList.classList.toggle("hidden");
     favoritesList.classList.add("hidden");
 });
 
-recentList.addEventListener("click", (event) => {
-    const recentItem = event.target.closest(".recent-item");
-
-    if (!recentItem) {
-        return;
-    }
-
-    pokemonInput.value = recentItem.dataset.id;
-    recentList.classList.add("hidden");
-    searchPokemon();
-});
+setupPokemonListClick(favoritesList);
+setupPokemonListClick(recentList);
