@@ -5,9 +5,12 @@ const randomBtn = document.querySelector("#random-btn");
 const soundBtn = document.querySelector("#sound-btn");
 const favoritesToggleBtn = document.querySelector("#favorites-toggle-btn");
 const favoritesList = document.querySelector("#favorites-list");
+const recentToggleBtn = document.querySelector("#recent-toggle-btn");
+const recentList = document.querySelector("#recent-list");
 let isShiny = false;
 let currentCry = "";
 let favorites = JSON.parse(localStorage.getItem("pokemonFavorites")) || [];
+let recentPokemon = JSON.parse(localStorage.getItem("recentPokemon")) || [];
 
 function saveFavorites() {
     localStorage.setItem("pokemonFavorites", JSON.stringify(favorites));
@@ -32,6 +35,31 @@ function toggleFavorite(pokemonData) {
     });
 }
     saveFavorites();
+}
+
+function saveRecentPokemon() {
+    localStorage.setItem(
+        "recentPokemon",
+        JSON.stringify(recentPokemon)
+    );
+}
+
+function addToRecentPokemon(pokemonData) {
+
+    recentPokemon = recentPokemon.filter(
+        pokemon => pokemon.id !== pokemonData.id
+    );
+
+    recentPokemon.unshift({
+        id: pokemonData.id,
+        name: pokemonData.name
+    });
+
+    if (recentPokemon.length > 10) {
+        recentPokemon.pop();
+    }
+
+    saveRecentPokemon();
 }
 
 function getSpriteSet(pokemonData) {
@@ -119,6 +147,7 @@ if (response.ok) {
     data = await defaultPokemonResponse.json();
 }
 const baseSprites = getSpriteSet(data);
+addToRecentPokemon(data);
 currentCry = data.cries.latest;
 const speciesResponse = await fetch(
     `https://pokeapi.co/api/v2/pokemon-species/${pokemonName}`
@@ -472,6 +501,21 @@ function renderFavoritesList() {
     `).join("");
 }
 
+function renderRecentList() {
+    if (recentPokemon.length === 0) {
+        recentList.innerHTML = `
+            <p class="favorites-empty">No hay Pokémon recientes todavía.</p>
+        `;
+        return;
+    }
+
+    recentList.innerHTML = recentPokemon.map(pokemon => `
+        <button class="recent-item" data-name="${pokemon.id}">
+            🕒 ${pokemon.name}
+        </button>
+    `).join("");
+}
+
 searchBtn.addEventListener("click", searchPokemon);
 pokemonInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") {
@@ -502,6 +546,7 @@ soundBtn.addEventListener("click", () => {
 favoritesToggleBtn.addEventListener("click", () => {
     renderFavoritesList();
     favoritesList.classList.toggle("hidden");
+    recentList.classList.add("hidden");
 });
 
 favoritesList.addEventListener("click", (event) => {
@@ -509,7 +554,23 @@ favoritesList.addEventListener("click", (event) => {
         return;
     }
 
-    pokemonInput.value = event.target.dataset.name;
+    pokemonInput.value = event.target.dataset.id;
     favoritesList.classList.add("hidden");
+    searchPokemon();
+});
+
+recentToggleBtn.addEventListener("click", () => {
+    renderRecentList();
+    recentList.classList.toggle("hidden");
+    favoritesList.classList.add("hidden");
+});
+
+recentList.addEventListener("click", (event) => {
+    if (!event.target.classList.contains("recent-item")) {
+        return;
+    }
+
+    pokemonInput.value = event.target.dataset.name;
+    recentList.classList.add("hidden");
     searchPokemon();
 });

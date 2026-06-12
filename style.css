@@ -55,12 +55,21 @@ h1 {
     font-size: 0.7rem;
 }
 
+#search-btn,
+#favorites-toggle-btn,
+#recent-toggle-btn {
+    width: 40px;
+    height: 36px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 #search-btn {
     padding: 10px 16px;
     border: 3px solid #2b2b2b;
     border-radius: 10px;
     flex-shrink: 0;
-    width: 90px;
     cursor: pointer;
     font-weight: bold;
     background: #84b6e9;
@@ -329,8 +338,6 @@ h1 {
 }
 
 #favorites-toggle-btn {
-    width: 42px;
-    height: 36px;
     border: 3px solid #2b2b2b;
     border-radius: 10px;
     cursor: pointer;
@@ -375,4 +382,40 @@ h1 {
     margin: 0;
     font-size: 0.8rem;
     font-weight: bold;
+}
+
+#recent-toggle-btn {
+
+    border: 3px solid #2b2b2b;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: bold;
+    background: #e9dab9;
+    box-shadow: 0 2px 0 #2b2b2b;
+}
+
+.recent-list {
+    background: #e9f5f2;
+    border: 3px solid #2b2b2b;
+    border-radius: 10px;
+    padding: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.recent-list.hidden {
+    display: none;
+}
+
+.recent-item {
+    border: 2px solid #2b2b2b;
+    border-radius: 999px;
+    background: #ffffff;
+    padding: 5px 9px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: capitalize;
 }
