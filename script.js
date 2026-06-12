@@ -3,9 +3,36 @@ const searchBtn = document.querySelector("#search-btn");
 const pokemonCard = document.querySelector("#pokemon-card");
 const randomBtn = document.querySelector("#random-btn");
 const soundBtn = document.querySelector("#sound-btn");
-
+const favoritesToggleBtn = document.querySelector("#favorites-toggle-btn");
+const favoritesList = document.querySelector("#favorites-list");
 let isShiny = false;
 let currentCry = "";
+let favorites = JSON.parse(localStorage.getItem("pokemonFavorites")) || [];
+
+function saveFavorites() {
+    localStorage.setItem("pokemonFavorites", JSON.stringify(favorites));
+}
+
+function isFavorite(pokemonId) {
+    return favorites.some(pokemon => pokemon.id === pokemonId);
+}
+
+function toggleFavorite(pokemonData) {
+    if (isFavorite(pokemonData.id)) {
+        favorites = favorites.filter(pokemon => pokemon.id !== pokemonData.id);
+    } else {
+
+    if (favorites.length >= 35) {
+        alert("Solo puedes guardar 35 Pokémon favoritos.");
+        return;
+    }
+    favorites.push({
+        id: pokemonData.id,
+        name: pokemonData.name
+    });
+}
+    saveFavorites();
+}
 
 function getSpriteSet(pokemonData) {
     const normal =
@@ -23,12 +50,27 @@ function getSpriteSet(pokemonData) {
 }
 
 function renderStats(pokemonData) {
-    return pokemonData.stats.map(statInfo => `
-        <div class="stat-row">
-            <span class="stat-name">${statInfo.stat.name}</span>
-            <span class="stat-value">${statInfo.base_stat}</span>
-        </div>
-    `).join("");
+    return pokemonData.stats.map(statInfo => {
+        const statName = statInfo.stat.name;
+        const statValue = statInfo.base_stat;
+        const barWidth = Math.min((statValue / 255) * 100, 100);
+
+        return `
+            <div class="stat-row">
+                <div class="stat-label">
+                    <span class="stat-name">${statName}</span>
+                    <span class="stat-value">${statValue}</span>
+                </div>
+
+                <div class="stat-bar">
+                    <div 
+                        class="stat-bar-fill" 
+                        style="width: ${barWidth}%"
+                    ></div>
+                </div>
+            </div>
+        `;
+    }).join("");
 }
 
 async function searchPokemon() {
@@ -141,10 +183,18 @@ const gmaxButtonHTML = gmaxForms.length > 0
 
         <div class="pokemon-header">
             <h2 id="pokemon-name">${data.name}</h2>
-            <span id="pokemon-number">
-                #${String(data.id).padStart(4, "0")}
-            </span>
+
+            <div class="pokemon-header-actions">
+                <button id="favorite-btn" class="favorite-btn">
+                    ${isFavorite(data.id) ? "★" : "☆"}
+                </button>
+
+                <span id="pokemon-number">
+                    #${String(data.id).padStart(4, "0")}
+                </span>
+            </div>
         </div>
+    </div>
 
         <div class="pokemon-image-frame">
             <img
@@ -185,6 +235,10 @@ const gmaxButtonHTML = gmaxForms.length > 0
 
     </div>
 `;
+pokemonCard.scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+});
 
 isShiny = false;
 
@@ -192,6 +246,12 @@ const shinyBtn = document.querySelector("#shiny-btn");
 const pokemonImage = document.querySelector("#pokemon-image");
 const pokemonNameTitle = document.querySelector("#pokemon-name");
 const statsList = document.querySelector("#stats-list");
+const favoriteBtn = document.querySelector("#favorite-btn");
+
+favoriteBtn.addEventListener("click", () => {
+    toggleFavorite(data);
+    favoriteBtn.textContent = isFavorite(data.id) ? "★" : "☆";
+});
 
 shinyBtn.addEventListener("click", () => {
     isShiny = !isShiny;
@@ -385,7 +445,7 @@ if (gmaxBtn) {
 }
 
 pokemonInput.value = "";
-pokemonInput.focus();
+pokemonInput.blur();
 
 }    catch (error) {
 
@@ -395,6 +455,21 @@ pokemonInput.focus();
 
         console.error(error);
     }
+}
+
+function renderFavoritesList() {
+    if (favorites.length === 0) {
+        favoritesList.innerHTML = `
+            <p class="favorites-empty">No hay favoritos todavía.</p>
+        `;
+        return;
+    }
+
+    favoritesList.innerHTML = favorites.map(pokemon => `
+        <button class="favorite-item" data-name="${pokemon.name}">
+            ⭐ ${pokemon.name}
+        </button>
+    `).join("");
 }
 
 searchBtn.addEventListener("click", searchPokemon);
@@ -422,4 +497,19 @@ soundBtn.addEventListener("click", () => {
 
     const cry = new Audio(currentCry);
     cry.play();
+});
+
+favoritesToggleBtn.addEventListener("click", () => {
+    renderFavoritesList();
+    favoritesList.classList.toggle("hidden");
+});
+
+favoritesList.addEventListener("click", (event) => {
+    if (!event.target.classList.contains("favorite-item")) {
+        return;
+    }
+
+    pokemonInput.value = event.target.dataset.name;
+    favoritesList.classList.add("hidden");
+    searchPokemon();
 });
