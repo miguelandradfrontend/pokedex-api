@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokédex</title>
+
+    <link rel="stylesheet" href="./style.css?v=14">
+</head>
+<body>
+    <main class="pokedex">
+        <h1>Pokédex</h1>
+
+        <div class="search-container">
+            <input
+                type="text"
+                id="pokemon-input"
+                placeholder="Nombre o número"
+            >
+        
+            <button id="search-btn">
+                🔍
+            </button>
+            <button id="favorites-toggle-btn" title="Ver favoritos">
+                ⭐
+            </button>
+            <button id="recent-toggle-btn" title="Recientes">
+                🕒
+            </button>
+        </div>
+
+        <div id="favorites-list" class="favorites-list hidden"></div>
+        <div id="recent-list" class="favorites-list hidden"></div>
+        <section id="pokemon-card">
+            <p>Busca un Pokémon para comenzar.</p>
+        </section>
+
+        <div class="action-buttons">
+
+            <button id="random-btn">
+                🎲 Aleatorio
+            </button>
+
+            <button id="sound-btn">
+                🔊 Sonido
+            </button>
+
+        </div>
+    </main>
+    <script src="./script.js?v=14"></script>
+</body>
+</html>
