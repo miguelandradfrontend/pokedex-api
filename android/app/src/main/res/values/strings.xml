@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Mi First Pokedex</string>
-    <string name="title_activity_main">Mi First Pokedex</string>
+    <string name="app_name">KMotion LeoDex</string>
+    <string name="title_activity_main">KMotion LeoDex</string>
     <string name="package_name">com.kmotionchronicles.pokedex</string>
     <string name="custom_url_scheme">com.kmotionchronicles.pokedex</string>
 </resources>

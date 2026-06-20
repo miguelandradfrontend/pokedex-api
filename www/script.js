@@ -606,3 +606,19 @@ recentToggleBtn.addEventListener("click", () => {
 
 setupPokemonListClick(favoritesList);
 setupPokemonListClick(recentList);
+
+window.addEventListener("load", () => {
+
+    const splash = document.getElementById("splash-screen");
+
+    setTimeout(() => {
+
+        splash.classList.add("hidden");
+
+        setTimeout(() => {
+            splash.remove();
+        }, 600);
+
+    }, 2000);
+
+});
