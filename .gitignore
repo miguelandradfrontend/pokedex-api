@@ -1,1 +1,7 @@
 node_modules/
+keystore/
+*.jks
+*.keystore
+dist/
+*.apk
+*.aab
