@@ -199,6 +199,11 @@ const speciesResponse = await fetch(
 );
 
 const speciesData = await speciesResponse.json();
+const evolutionResponse = await fetch(
+    speciesData.evolution_chain.url
+);
+
+const evolutionData = await evolutionResponse.json();
 const megaForms = speciesData.varieties.filter(
     variety => variety.pokemon.name.includes("-mega")
 );
@@ -304,6 +309,12 @@ const gmaxButtonHTML = gmaxForms.length > 0
             </div>
             <p><strong>Altura:</strong> ${data.height}</p>
             <p><strong>Peso:</strong> ${data.weight}</p>
+            <div class="evolution-section">
+                <p><strong>Evoluciones:</strong></p>
+                <div id="evolution-chain" class="evolution-chain">
+                    Cargando evoluciones...
+                </div>
+            </div>
             <div class="pokemon-stats">
                 <p class="stats-title"><strong>Estadísticas base:</strong></p>
                 <div id="stats-list">
@@ -513,6 +524,64 @@ if (gmaxBtn) {
     });
 }
 
+const evolutionChainElement =
+    document.querySelector("#evolution-chain");
+
+if (evolutionChainElement) {
+
+    const evolutions = [];
+
+    let currentEvolution = evolutionData.chain;
+
+    while (currentEvolution) {
+
+        evolutions.push(
+            currentEvolution.species.name
+        );
+
+        currentEvolution =
+            currentEvolution.evolves_to[0];
+    }
+
+const evolutionItems = await Promise.all(
+    evolutions.map(async (pokemonName) => {
+        const response = await fetch(
+            `https://pokeapi.co/api/v2/pokemon/${pokemonName}`
+        );
+
+        const pokemon = await response.json();
+        const sprites = getSpriteSet(pokemon);
+
+        return `
+            <button class="evolution-pokemon" data-pokemon="${pokemonName}">
+                <img src="${sprites.normal}" alt="${pokemonName}">
+                <span class="evolution-name">${pokemonName}</span>
+            </button>
+        `;
+    })
+);
+
+evolutionChainElement.innerHTML =
+    evolutionItems
+        .map((item, index) => {
+            const hasNext = index < evolutionItems.length - 1;
+
+            return `
+                <div class="evolution-step">
+                    ${item}
+                    ${hasNext ? '<span class="evolution-arrow">↘</span>' : ''}
+                </div>
+            `;
+        })
+        .join("");
+
+evolutionChainElement.querySelectorAll(".evolution-pokemon").forEach(button => {
+    button.addEventListener("click", () => {
+        pokemonInput.value = button.dataset.pokemon;
+        searchPokemon();
+    });
+});
+}
 pokemonInput.value = "";
 pokemonInput.blur();
 
@@ -622,3 +691,23 @@ window.addEventListener("load", () => {
     }, 2000);
 
 });
+
+const aboutBtn = document.getElementById("aboutBtn");
+const aboutModal = document.getElementById("aboutModal");
+const closeAboutBtn = document.getElementById("closeAboutBtn");
+
+if (aboutBtn && aboutModal && closeAboutBtn) {
+    aboutBtn.addEventListener("click", () => {
+        aboutModal.classList.remove("hidden");
+    });
+
+    closeAboutBtn.addEventListener("click", () => {
+        aboutModal.classList.add("hidden");
+    });
+
+    aboutModal.addEventListener("click", (event) => {
+        if (event.target === aboutModal) {
+            aboutModal.classList.add("hidden");
+        }
+    });
+}
