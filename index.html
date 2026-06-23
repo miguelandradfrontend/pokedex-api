@@ -4,10 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pokédex</title>
-
+    
     <link rel="stylesheet" href="./style.css?v=14">
 </head>
 <body>
+    <div id="splash-screen">
+        <img src="assets/splash.png" alt="KMotion LeoDex Splash">
+    </div>
+    <button id="aboutBtn" class="about-btn">ℹ️</button>
     <main class="pokedex">
         <h1>Pokédex</h1>
 
@@ -46,7 +50,36 @@
             </button>
 
         </div>
+        <footer class="app-footer">
+            KMotion LeoDex · v1.0
+        </footer>
     </main>
+
+    <div id="aboutModal" class="about-modal hidden">
+    <div class="about-content">
+        <button id="closeAboutBtn" class="close-about">✖</button>
+
+        <h2>KMotion LeoDex</h2>
+        <p class="version-text">Versión 1.0</p>
+
+        <p>
+            Pokédex creada por Miguel A. Andrades Camacho.
+        </p>
+
+        <p>
+            Desarrollada como primera aplicación Android usando HTML, CSS, JavaScript y Capacitor.
+        </p>
+
+        <p>
+            Creada especialmente para mi hijo.
+        </p>
+
+        <p class="api-credit">
+            Datos proporcionados por PokéAPI.
+        </p>
+    </div>
+</div>
+
     <script src="./script.js?v=14"></script>
 </body>
 </html>
