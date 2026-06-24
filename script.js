@@ -9,8 +9,20 @@ const recentToggleBtn = document.querySelector("#recent-toggle-btn");
 const recentList = document.querySelector("#recent-list");
 let isShiny = false;
 let currentCry = "";
-let favorites = JSON.parse(localStorage.getItem("pokemonFavorites")) || [];
-let recentPokemon = JSON.parse(localStorage.getItem("recentPokemon")) || [];
+let favorites = (JSON.parse(localStorage.getItem("pokemonFavorites")) || [])
+    .map(pokemon => ({
+        id: pokemon.id,
+        name: pokemon.name
+    }));
+
+let recentPokemon = (JSON.parse(localStorage.getItem("recentPokemon")) || [])
+    .map(pokemon => ({
+        id: pokemon.id,
+        name: pokemon.name
+    }));
+
+saveFavorites();
+saveRecentPokemon();
 
 function saveFavorites() {
     localStorage.setItem("pokemonFavorites", JSON.stringify(favorites));
@@ -29,13 +41,10 @@ function toggleFavorite(pokemonData) {
         alert("Solo puedes guardar 35 Pokémon favoritos.");
         return;
     }
-    const sprites = getSpriteSet(pokemonData);
-
-    favorites.push({
-        id: pokemonData.id,
-        name: pokemonData.name,
-        image: sprites.normal
-    });
+favorites.push({
+    id: pokemonData.id,
+    name: pokemonData.name
+});
 }
     saveFavorites();
 }
@@ -53,13 +62,10 @@ function addToRecentPokemon(pokemonData) {
         pokemon => pokemon.id !== pokemonData.id
     );
 
-    const sprites = getSpriteSet(pokemonData);
-
-    recentPokemon.unshift({
-        id: pokemonData.id,
-        name: pokemonData.name,
-        image: sprites.normal
-    });
+recentPokemon.unshift({
+    id: pokemonData.id,
+    name: pokemonData.name
+});
 
     if (recentPokemon.length > 10) {
         recentPokemon.pop();
@@ -118,7 +124,7 @@ function renderPokemonList(list, className, emptyMessage) {
     return list.map(pokemon => `
         <button class="${className}" data-id="${pokemon.id}">
             <img
-                src="${pokemon.image}"
+                src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png"
                 alt="${pokemon.name}"
                 class="mini-sprite"
             >
