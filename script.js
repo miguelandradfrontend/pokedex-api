@@ -551,16 +551,38 @@ if (evolutionChainElement) {
 
 const evolutionItems = await Promise.all(
     evolutions.map(async (pokemonName) => {
-        const response = await fetch(
+
+        let response = await fetch(
             `https://pokeapi.co/api/v2/pokemon/${pokemonName}`
         );
 
-        const pokemon = await response.json();
+        let pokemon;
+
+        if (response.ok) {
+            pokemon = await response.json();
+        } else {
+            const speciesResponse = await fetch(
+                `https://pokeapi.co/api/v2/pokemon-species/${pokemonName}`
+            );
+
+            const species = await speciesResponse.json();
+
+            const defaultVariety = species.varieties.find(
+                variety => variety.is_default
+            );
+
+            const defaultPokemonResponse = await fetch(
+                defaultVariety.pokemon.url
+            );
+
+            pokemon = await defaultPokemonResponse.json();
+        }
+
         const sprites = getSpriteSet(pokemon);
 
         return `
-            <button class="evolution-pokemon" data-pokemon="${pokemonName}">
-                <img src="${sprites.normal}" alt="${pokemonName}">
+            <button class="evolution-pokemon" data-pokemon="${pokemon.name}">
+                <img src="${sprites.normal}" alt="${pokemon.name}">
                 <span class="evolution-name">${pokemonName}</span>
             </button>
         `;
